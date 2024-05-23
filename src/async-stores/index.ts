@@ -135,6 +135,7 @@ export const asyncWritable = <S extends Stores, T>(
 
         if (
           newValuesString === loadedValuesString &&
+          // prevent comparing undefined to undefined when storeValues cannot be stringified
           !loadedValuesStringInvalid
         ) {
           // no change, don't generate new promise
