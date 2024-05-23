@@ -551,6 +551,16 @@ describe('asyncWritable', () => {
 
       expect(mappingWriteFunction).toHaveBeenCalledTimes(1);
     });
+
+    it('handles store values which contain stores', async () => {
+      const myWritable = writable({ a: 1 });
+      const mappingWriteFunction = vi.fn(() => Promise.resolve(myWritable));
+      const myAsyncWritable = asyncWritable([], mappingWriteFunction);
+
+      const intermediateStore = await myAsyncWritable.load();
+
+      expect(intermediateStore.load()).resolves.toStrictEqual({ a: 1 });
+    });
   });
 
   describe('asyncWritable with parents', () => {

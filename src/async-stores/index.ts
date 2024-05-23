@@ -69,6 +69,7 @@ export const asyncWritable = <S extends Stores, T>(
   // stringified representation of parents' loaded values
   // used to track whether a change has occurred and the store reloaded
   let loadedValuesString: string;
+  let loadedValuesStringInvalid = false;
 
   let latestLoadAndSet: () => Promise<T>;
 
@@ -127,11 +128,23 @@ export const asyncWritable = <S extends Stores, T>(
     ) as StoresValues<S>;
 
     if (!forceReload) {
-      const newValuesString = JSON.stringify(storeValues);
-      if (newValuesString === loadedValuesString) {
-        // no change, don't generate new promise
-        return currentLoadPromise;
+      let newValuesString: string;
+
+      try {
+        newValuesString = JSON.stringify(storeValues);
+
+        if (
+          newValuesString === loadedValuesString &&
+          !loadedValuesStringInvalid
+        ) {
+          // no change, don't generate new promise
+          return currentLoadPromise;
+        }
+      } catch {
+        loadedValuesStringInvalid = true;
+        newValuesString = undefined;
       }
+
       loadedValuesString = newValuesString;
     }
 
@@ -239,6 +252,7 @@ export const asyncWritable = <S extends Stores, T>(
         thisStore.set(initial);
         setState('LOADING');
         loadedValuesString = undefined;
+        loadedValuesStringInvalid = false;
         currentLoadPromise = undefined;
       }
     : undefined;
